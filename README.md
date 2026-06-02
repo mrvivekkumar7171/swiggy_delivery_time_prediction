@@ -1,10 +1,25 @@
-# swiggy_delivery_time_prediction
+# Swiggy-Delivery-Time-Prediction
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
+Build Ml project that predicts food delivery time in minutes from origin to destination. It is a `Regression` problem that has input features about the `rider`, the `vehicle`
+he owns, the `weather` condition, `traffic`, `City`, `Holiday` and `location` of `restaurant` and `delivery`.
 
-A short description of the project.
+### What metrics to use?
+We will use RMSE and MAE because we want prediction in minute instead of minute square.
+
+### **How ML Helps in Improving Business**
+- **Enhances Customer Satisfaction & Trust (CSAT):** accurate estimated delivery time predictions (ETAs) allow customers to plan better, reducing anxiety and frustration. This transparency builds trust, improves brand image, and leads to higher customer satisfaction scores.
+- **Increases Customer Retention & Lifetime Value (CLV):** Reliable delivery experiences encourage repeat business, directly increasing the retention rate and long-term revenue without additional acquisition costs.
+- **Optimizes Resource Allocation & Scheduling:** Predictive insights allow dispatch teams to plan shifts and routes more effectively, such as assigning drivers to specific zones during predicted peak traffic or weather disruptions, reducing idle time.
+- **Improves Operational Efficiency & Driver Utilization:** Enables better routing and delivery clustering (managing multiple orders), which maximizes the number of deliveries per hour and optimizes each driver’s workload.
+- **Reduces Operational & Support Costs:** Accurate ETAs minimize the volume of "Where is my order?" support calls, significantly lowering customer service expenses. It also reduces fuel and labor costs through optimized routing.
+- **Minimizes Order Cancellations:** With transparent and realistic wait times, customers are less likely to cancel orders due to uncertainty, directly improving the delivery success rate.
+- **Boosts Average Order Value (AOV):** consistently good delivery experiences build confidence, encouraging customers to place larger or more frequent orders, especially during promotions.
+- **Enables Dynamic Decision Making:** Allows for real-time adjustments, such as reassigning drivers or rescheduling deliveries during unforeseen delays, ensuring high-priority orders are still met.
+- **Facilitates Strategic Planning & Expansion:** Data on delivery bottlenecks helps identify where to open new micro-fulfillment centers or hubs and aids in planning for geographic expansion.
+- **Empowers Riders & Reduces Risk:** Drivers can plan their pickups and deliveries better, reducing the need for risky driving to meet unrealistic deadlines. This leads to better ratings, reduced stress, and the potential for higher earnings through efficiency.
+- **Supports Restaurant Operations:** Helps restaurants balance in-house vs. delivery orders by prioritizing based on accurate pickup times. It also allows for better staff scaling during predicted demand spikes.
+- **Revenue Management (Surge Pricing & Promotions):** Helps identify peak demand periods to implement surge pricing effectively or offer discounts during off-peak hours to level out demand and ensure continuous revenue generation.
+- **Reduces Compensation Costs:** Proactive management of delays helps avoid costs associated with refunds, compensations, or discounts given to appease unhappy customers.
 
 ## Project Organization
 
