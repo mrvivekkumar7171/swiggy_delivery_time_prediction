@@ -12,3 +12,5 @@
 matplotlib
 missingno
 plotly
+scikit-learn
+nbformat==5.10.4
