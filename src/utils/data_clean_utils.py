@@ -1,19 +1,6 @@
 import numpy as np
 import pandas as pd
 
-#
-columns_to_drop =  ['rider_id',
-                    'restaurant_latitude',
-                    'restaurant_longitude',
-                    'delivery_latitude',
-                    'delivery_longitude',
-                    'order_date',
-                    "order_time_hour",
-                    "order_day",
-                    "city_name",
-                    "order_day_of_week",
-                    "order_month"]
-
 
 def change_column_names(data: pd.DataFrame):
     return (
@@ -28,14 +15,15 @@ def change_column_names(data: pd.DataFrame):
             "time_order_picked": "order_picked_time",
             "weatherconditions": "weather",
             "road_traffic_density": "traffic",
-            "city": "city_type"},
-            #"time_taken(min)": "time_taken"},
+            "city": "city_type",
+            "time_taken(min)": "time_taken"},
             axis=1)
     )
 
 
 def time_of_day(ser):
 
+    # Using pd.cut instead of pd.select so that the NaN values are not converted to a category and are left as NaN
     return(
         pd.cut(ser, bins=[0,6,12,17,20,24], right=True,
                labels=["after_midnight","morning","afternoon","evening","night"])
@@ -103,11 +91,11 @@ def data_cleaning(data: pd.DataFrame):
             festival = lambda x: x['festival'].str.rstrip().str.lower(),
             city_type = lambda x: x['city_type'].str.rstrip().str.lower(),
             # multiple deliveries column
-            multiple_deliveries = lambda x: x['multiple_deliveries'].astype(float))
+            multiple_deliveries = lambda x: x['multiple_deliveries'].astype(float),
             # target column modifications
-            # time_taken = lambda x: (x['time_taken']
-            #                         .str.replace("(min) ","")
-            #                         .astype(int)))
+            time_taken = lambda x: (x['time_taken']
+                                    .str.replace("(min) ","")
+                                    .astype(int)))
         .drop(columns=["order_time","order_picked_time"])
     )
 
@@ -174,19 +162,39 @@ def calculate_haversine_distance(df):
             distance = distance)
     )
 
-#
+
 def create_distance_type(data: pd.DataFrame):
     return(
         data
         .assign(
                 distance_type = pd.cut(data["distance"],bins=[0,5,10,15,25],
-                                        right=False,labels=["short","medium","long","very_long"])
+                                        right=False, labels=["short","medium","long","very_long"])
     ))
+
+
+columns_to_drop =  ['rider_id',
+                    'restaurant_latitude',
+                    'restaurant_longitude',
+                    'delivery_latitude',
+                    'delivery_longitude',
+                    'order_date',
+                    "order_time_hour",
+                    "order_day",
+                    # "city_name",
+                    # "order_day_of_week",
+                    # "order_month"
+                    ]
 
 #
 def drop_columns(data: pd.DataFrame, columns: list) -> pd.DataFrame:
+    """
+        Dropping columns that are not required for model input as per EDA and feature engineering
+        Here, order_day and order_time_hour are dropped as linear model takes numerical input as magnitude
+        and assume day 2 > day 1 and hour 12 > hour 11
+    """
+
     df = data.drop(columns=columns)
-    return df
+    return df # df.dropna()
 
 
 def perform_data_cleaning(data: pd.DataFrame):
@@ -200,8 +208,9 @@ def perform_data_cleaning(data: pd.DataFrame):
         .pipe(create_distance_type)
         .pipe(drop_columns, columns=columns_to_drop)
     )
-    
-    return cleaned_data.dropna()
+    cleaned_data.dropna()
+
+    cleaned_data.to_csv("A:/CODES/PROJECTS/swiggy_delivery_time_prediction/data/raw/swiggy_cleaned.csv", index=False)
 
 
 if __name__ == "__main__":
