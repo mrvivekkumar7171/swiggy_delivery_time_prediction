@@ -172,20 +172,6 @@ def create_distance_type(data: pd.DataFrame):
     ))
 
 
-columns_to_drop =  ['rider_id',
-                    'restaurant_latitude',
-                    'restaurant_longitude',
-                    'delivery_latitude',
-                    'delivery_longitude',
-                    'order_date',
-                    "order_time_hour",
-                    "order_day",
-                    # "city_name",
-                    # "order_day_of_week",
-                    # "order_month"
-                    ]
-
-#
 def drop_columns(data: pd.DataFrame, columns: list) -> pd.DataFrame:
     """
         Dropping columns that are not required for model input as per EDA and feature engineering
@@ -194,11 +180,26 @@ def drop_columns(data: pd.DataFrame, columns: list) -> pd.DataFrame:
     """
 
     df = data.drop(columns=columns)
-    return df # df.dropna()
+    return df.dropna()
 
 
 def perform_data_cleaning(data: pd.DataFrame):
-    
+    """
+        Run the Data Cleaning Pipeline and save the cleaned data to csv file
+    """
+    columns_to_drop =  ['rider_id',
+                    'restaurant_latitude',
+                    'restaurant_longitude',
+                    'delivery_latitude',
+                    'delivery_longitude',
+                    'order_date',
+                    "order_time_hour",
+                    "order_day",
+                    "city_name",
+                    "order_day_of_week",
+                    "order_month"
+                    ]
+
     cleaned_data = (
         data
         .pipe(change_column_names)
@@ -206,9 +207,8 @@ def perform_data_cleaning(data: pd.DataFrame):
         .pipe(clean_lat_long)
         .pipe(calculate_haversine_distance)
         .pipe(create_distance_type)
-        .pipe(drop_columns, columns=columns_to_drop)
+        # .pipe(drop_columns, columns=columns_to_drop)
     )
-    cleaned_data.dropna()
 
     cleaned_data.to_csv("A:/CODES/PROJECTS/swiggy_delivery_time_prediction/data/raw/swiggy_cleaned.csv", index=False)
 
