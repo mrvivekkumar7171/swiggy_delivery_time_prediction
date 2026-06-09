@@ -1,0 +1,55 @@
+name: CI
+
+on: push
+
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14.4'
+          cache: 'pip' # cache pip dependencies for faster builds in future runs
+
+      - name: Install Packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ap-south-1
+
+      # - name: DVC Pull
+      #   run: |
+      #     dvc pull
+
+      # - name: DVC Repro # For Big Dataset use self hosted runners
+      #   run: |
+      #     dvc repro
+
+      - name: Test Model Registry
+        env:
+          DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          pytest tests/test_model_registry.py
+
+      # - name: Test Model Performance # need to run dvc pull before this step to get the test data
+      #   env:
+      #     DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+      #   run: |
+      #     pytest tests/test_model_perf.py
+
+      - name: Promote Model
+        if: success()
+        env:
+          DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          python src/utils/promote_model_to_prod.py

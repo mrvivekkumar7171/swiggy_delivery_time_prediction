@@ -57,7 +57,7 @@ nominal_cat_cols = ['weather',
                     "order_time_of_day"]
 ordinal_cat_cols = ["traffic", "distance_type"]
 model_name = 'SwiggyDeliveryTimePredictor'
-alias = "challenger"
+alias = "champion"
 model_uri = f"models:/{model_name}@{alias}"
 model = mlflow.sklearn.load_model(model_uri=model_uri)
 

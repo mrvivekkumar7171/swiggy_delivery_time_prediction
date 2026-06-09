@@ -26,6 +26,7 @@ joblib
 fastapi
 numpy
 pandas
+pytest==9.0.3
 
 # requests
 # pydantic

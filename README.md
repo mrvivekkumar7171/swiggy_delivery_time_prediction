@@ -23,6 +23,8 @@ We will use RMSE and MAE because we want prediction in minute instead of minute 
 
 #### TODO:
 1. Add dvc remote
+2. Add CD pipeline
+NOTE: No need to do Model Signatures test as FastAPI will handle the input validation using Pydantic automatically.
 
 > Example of input data for the model:
 ```json
