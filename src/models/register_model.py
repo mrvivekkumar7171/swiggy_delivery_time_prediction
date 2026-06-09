@@ -1,4 +1,3 @@
-from mlflow import MlflowClient
 from pathlib import Path
 import mlflow.client
 import dagshub
@@ -44,32 +43,20 @@ if __name__ == "__main__":
     run_info_path = root_path / "run_information.json"
     
     # register the model
-    run_info = load_model_information(run_info_path)
+    model_info = load_model_information(run_info_path)
     
-    # get the run id
-    run_id = run_info["run_id"]
-    artifact_path = run_info["artifact_path"]
-    model_name = run_info["model_name"]
-    
-    # model to register path
-    model_registry_path = f"runs:/{run_id}/{artifact_path}"
+    # get the run id & model to register path
+    model_uri = model_info["model_path"]
+    model_name = "SwiggyDeliveryTimePredictor"
     
     
     # register the model
-    print(f"Registering model from exact URI: {model_registry_path}")
-    model_version = mlflow.register_model(model_uri=model_registry_path, name=model_name)
-    
-    # get the model version
-    registered_model_version = model_version.version
-    registered_model_name = model_version.name
-    logger.info(f"The latest model version in model registry is {registered_model_version}")
-    
+    model_version = mlflow.register_model(model_uri=model_uri, name=model_name).version
+
+    logger.info(f"The latest model version in model registry is {model_version}")
+
     # update the stage of the model to staging
-    client = MlflowClient()
-    client.transition_model_version_stage(
-        name=registered_model_name,
-        version=registered_model_version,
-        stage="Staging"
-    )
+    client = mlflow.tracking.MlflowClient()
+    client.set_registered_model_alias(name=model_name, version=model_version, alias='challenger')
     
     logger.info("Model pushed to Staging stage")

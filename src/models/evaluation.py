@@ -1,13 +1,17 @@
+from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.model_selection import cross_val_score
+from pathlib import Path
 import pandas as pd
-import joblib
+import warnings
+import dagshub
 import logging
 import mlflow
-import dagshub
-from pathlib import Path
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import mean_absolute_error, r2_score
+import joblib
 import json
 
+# Suppress the Python UserWarnings from MLflow (e.g., the inferred schema warning)
+warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
+logging.getLogger("mlflow").setLevel(logging.ERROR)
 
 # initialize dagshub
 import dagshub
@@ -58,11 +62,10 @@ def load_model(model_path: Path):
     return model
 
 
-def save_model_info(save_json_path,run_id, artifact_path, model_name):
+def save_model_info(save_json_path, run_id, model_path):
     info_dict = {
         "run_id": run_id,
-        "artifact_path": artifact_path,
-        "model_name": model_name
+        "model_path": model_path
     }
     with open(save_json_path,"w") as f:
         json.dump(info_dict,f,indent=4)
@@ -114,7 +117,7 @@ if __name__ == "__main__":
     cv_scores = cross_val_score(model,
                                 X_train,
                                 y_train,
-                                cv=2, # change to 5
+                                cv=5,
                                 scoring="neg_mean_absolute_error",
                                 n_jobs=-1)
     logger.info("cross validation complete")
@@ -151,28 +154,21 @@ if __name__ == "__main__":
         # model signature
         model_signature = mlflow.models.infer_signature(model_input=X_train.sample(20,random_state=42),
                                     model_output=model.predict(X_train.sample(20,random_state=42)))
-        model_name = "SwiggyDeliveryTimePredictor"
-        artifact_path="my_model_artifacts"
+        model_name = "model"
 
         # log the final model
-        model_info = mlflow.sklearn.log_model(
-            sk_model=model,
-            artifact_path=artifact_path, 
-            registered_model_name=model_name, 
-            signature=model_signature
-        )
+        model_info = mlflow.sklearn.log_model(sk_model=model, artifact_path=model_name, signature=model_signature)
 
         # log stacking regressor, power transformer & preprocessor
         mlflow.log_artifact(root_path / "models" / "stacking_regressor.joblib")
         mlflow.log_artifact(root_path / "models" / "power_transformer.joblib")
         mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")
-        
+
         logger.info("Mlflow logging complete and model logged")
     
     # save the model info
     save_json_path = root_path / "run_information.json"
-    save_model_info(save_json_path=save_json_path,
-                    run_id=run.info.run_id,
-                    artifact_path=artifact_path,
-                    model_name=model_name)
+    save_model_info(run_id = run.info.run_id,
+                    model_path = model_info.model_uri,
+                    save_json_path = save_json_path)
     logger.info("Model Information saved")

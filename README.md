@@ -21,6 +21,35 @@ We will use RMSE and MAE because we want prediction in minute instead of minute 
 - **Revenue Management (Surge Pricing & Promotions):** Helps identify peak demand periods to implement surge pricing effectively or offer discounts during off-peak hours to level out demand and ensure continuous revenue generation.
 - **Reduces Compensation Costs:** Proactive management of delays helps avoid costs associated with refunds, compensations, or discounts given to appease unhappy customers.
 
+#### TODO:
+1. Add dvc remote
+
+> Example of input data for the model:
+```json
+{
+  "ID": "0x4607",
+  "Delivery_person_ID": "INDORES13DEL02",
+  "Delivery_person_Age": "37",
+  "Delivery_person_Ratings": "4.9",
+  "Restaurant_latitude": 22.745049,
+  "Restaurant_longitude": 75.892471,
+  "Delivery_location_latitude": 22.765049,
+  "Delivery_location_longitude": 75.912471,
+  "Order_Date": "19-03-2022",
+  "Time_Orderd": "11:30:00",
+  "Time_Order_picked": "11:45:00",
+  "Weatherconditions": "conditions Sunny",
+  "Road_traffic_density": "High",
+  "Vehicle_condition": 2,
+  "Type_of_order": "Snack",
+  "Type_of_vehicle": "motorcycle",
+  "multiple_deliveries": "0",
+  "Festival": "No",
+  "City": "Urban"
+}
+```
+
+
 ## Project Organization
 
 ```
