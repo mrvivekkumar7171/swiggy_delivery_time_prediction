@@ -1,10 +1,38 @@
-import numpy as np
+from pathlib import Path
 import pandas as pd
+import numpy as np
+import logging
+
+# create logger
+logger = logging.getLogger("data_cleaning")
+logger.setLevel(logging.INFO)
+
+# console handler
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+
+# add handler to logger
+logger.addHandler(handler)
+
+# create a fomratter
+formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# add formatter to handler
+handler.setFormatter(formatter)
 
 
-def change_column_names(data: pd.DataFrame):
+def load_data(data_path: Path) -> pd.DataFrame:
+    try:
+        df = pd.read_csv(data_path)
+    
+    except FileNotFoundError:
+        logger.error("The file to load does not exist")
+    
+    return df
+
+
+def change_column_names(data: pd.DataFrame) -> pd.DataFrame:
     return (
-        data.rename(str.lower, axis=1)
+        data.rename(str.lower,axis=1)
         .rename({
             "delivery_person_id" : "rider_id",
             "delivery_person_age": "age",
@@ -16,21 +44,19 @@ def change_column_names(data: pd.DataFrame):
             "weatherconditions": "weather",
             "road_traffic_density": "traffic",
             "city": "city_type",
-            "time_taken(min)": "time_taken"},
-            axis=1)
+            "time_taken(min)": "time_taken"},axis=1)
     )
 
 
-def time_of_day(ser):
+def time_of_day(ser: pd.Series):
 
-    # Using pd.cut instead of pd.select so that the NaN values are not converted to a category and are left as NaN
     return(
-        pd.cut(ser, bins=[0,6,12,17,20,24], right=True,
+        pd.cut(ser,bins=[0,6,12,17,20,24],right=True,
                labels=["after_midnight","morning","afternoon","evening","night"])
     )
 
 
-def data_cleaning(data: pd.DataFrame):
+def data_cleaning(data: pd.DataFrame) -> pd.DataFrame:
     minors_data = data.loc[data['age'].astype('float') < 18]
     minor_index = minors_data.index.tolist()
     six_star_data = data.loc[data['ratings'] == "6"]
@@ -100,7 +126,7 @@ def data_cleaning(data: pd.DataFrame):
     )
 
 
-def clean_lat_long(data: pd.DataFrame, threshold=1):
+def clean_lat_long(data: pd.DataFrame, threshold: float=1.0) -> pd.DataFrame:
     location_columns = ['restaurant_latitude',
                         'restaurant_longitude',
                         'delivery_latitude',
@@ -117,11 +143,8 @@ def clean_lat_long(data: pd.DataFrame, threshold=1):
     )
 
 
-def extract_datetime_features(ser):
-    """
-        Extract day, day name, month and year
-    """
-    date_col = pd.to_datetime(ser, dayfirst=True)
+def extract_datetime_features(ser: pd.Series) -> pd.DataFrame:
+    date_col = pd.to_datetime(ser,dayfirst=True)
 
     return (
         pd.DataFrame(
@@ -135,7 +158,7 @@ def extract_datetime_features(ser):
         ))
 
 
-def calculate_haversine_distance(df):
+def calculate_haversine_distance(df: pd.DataFrame) -> pd.DataFrame:
     location_columns = ['restaurant_latitude',
                         'restaurant_longitude',
                         'delivery_latitude',
@@ -163,42 +186,33 @@ def calculate_haversine_distance(df):
     )
 
 
-def create_distance_type(data: pd.DataFrame):
+def create_distance_type(data: pd.DataFrame) -> pd.DataFrame:
     return(
         data
         .assign(
                 distance_type = pd.cut(data["distance"],bins=[0,5,10,15,25],
-                                        right=False, labels=["short","medium","long","very_long"])
+                                        right=False,labels=["short","medium","long","very_long"])
     ))
 
 
 def drop_columns(data: pd.DataFrame, columns: list) -> pd.DataFrame:
-    """
-        Dropping columns that are not required for model input as per EDA and feature engineering
-        Here, order_day and order_time_hour are dropped as linear model takes numerical input as magnitude
-        and assume day 2 > day 1 and hour 12 > hour 11
-    """
-
     df = data.drop(columns=columns)
-    return df.dropna()
+    return df
 
 
-def perform_data_cleaning(data: pd.DataFrame):
-    """
-        Run the Data Cleaning Pipeline and save the cleaned data to csv file
-    """
+def perform_data_cleaning(data: pd.DataFrame, saved_data_path: Path) -> None:
+    
     columns_to_drop =  ['rider_id',
-                    'restaurant_latitude',
-                    'restaurant_longitude',
-                    'delivery_latitude',
-                    'delivery_longitude',
-                    'order_date',
-                    "order_time_hour",
-                    "order_day",
-                    "city_name",
-                    "order_day_of_week",
-                    "order_month"
-                    ]
+                        'restaurant_latitude',
+                        'restaurant_longitude',
+                        'delivery_latitude',
+                        'delivery_longitude',
+                        'order_date',
+                        "order_time_hour",
+                        "order_day",
+                        "city_name",
+                        "order_day_of_week",
+                        "order_month"]
 
     cleaned_data = (
         data
@@ -207,18 +221,30 @@ def perform_data_cleaning(data: pd.DataFrame):
         .pipe(clean_lat_long)
         .pipe(calculate_haversine_distance)
         .pipe(create_distance_type)
-        .pipe(drop_columns, columns=columns_to_drop)
+        .pipe(drop_columns,columns=columns_to_drop)
     )
-
-    cleaned_data.to_csv("A:/CODES/PROJECTS/swiggy_delivery_time_prediction/data/raw/swiggy_cleaned.csv", index=False)
+    
+    # save the data
+    cleaned_data.to_csv(saved_data_path,index=False)
 
 
 if __name__ == "__main__":
-    # data path for data
-    DATA_PATH = "A:/CODES/PROJECTS/swiggy_delivery_time_prediction/data/raw/swiggy.csv"
-
-    # read the data from path
-    df = pd.read_csv(DATA_PATH)
-    print('swiggy data loaded successfuly')
+    # root path
+    root_path = Path(__file__).parent.parent.parent
     
-    perform_data_cleaning(df)
+    # data save directory
+    cleaned_data_save_dir = root_path / "data" / "cleaned"
+    # make directory if not exits
+    cleaned_data_save_dir.mkdir(exist_ok=True,parents=True)
+    # data save path & load path
+    data_filename = "swiggy.csv"
+    cleaned_data_save_path = cleaned_data_save_dir / data_filename
+    data_load_path = root_path / "data" / "raw" / data_filename
+    
+    # load the data
+    df = load_data(data_load_path)
+    logger.info("Data read successfully")
+    
+    # clean the data and save
+    perform_data_cleaning(data=df, saved_data_path=cleaned_data_save_path)
+    logger.info("Data cleaned and saved")
