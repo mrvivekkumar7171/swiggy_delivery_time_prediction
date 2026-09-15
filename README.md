@@ -1,12 +1,14 @@
-# Swiggy-Delivery-Time-Prediction
+### **Swiggy Delivery Time Prediction**
 
-Build Ml project that predicts food delivery time in minutes from origin to destination. It is a `Regression` problem that has input features about the `rider`, the `vehicle`
-he owns, the `weather` condition, `traffic`, `City`, `Holiday` and `location` of `restaurant` and `delivery`.
+The project aims to build an ML model that will predicts **food delivery time** taken by the `rider` to deliver food from origin `restaurant` to destination `customer`.
 
-### What metrics to use?
-We will use RMSE and MAE because we want prediction in minute instead of minute square.
+It is a `Regression` problem where we predicts the delivery time in minutes from the restaurant to the customer. We will be using only RMSE and MAE since, we want prediction in minute instead of minute square and minutes square is not interpretable.
+**This project takes three types of input features:**
+- Rider Information: `rider` and `vehicle` of the rider.
+- Environmental Factors: `weather`, `traffic`, `City` and `Holiday`.
+- Location Information: `location` of `restaurant` and `delivery`.
 
-### **How ML Helps in Improving Business**
+### **How this model helps in improving business ?**
 - **Enhances Customer Satisfaction & Trust (CSAT):** accurate estimated delivery time predictions (ETAs) allow customers to plan better, reducing anxiety and frustration. This transparency builds trust, improves brand image, and leads to higher customer satisfaction scores.
 - **Increases Customer Retention & Lifetime Value (CLV):** Reliable delivery experiences encourage repeat business, directly increasing the retention rate and long-term revenue without additional acquisition costs.
 - **Optimizes Resource Allocation & Scheduling:** Predictive insights allow dispatch teams to plan shifts and routes more effectively, such as assigning drivers to specific zones during predicted peak traffic or weather disruptions, reducing idle time.
@@ -21,12 +23,110 @@ We will use RMSE and MAE because we want prediction in minute instead of minute 
 - **Revenue Management (Surge Pricing & Promotions):** Helps identify peak demand periods to implement surge pricing effectively or offer discounts during off-peak hours to level out demand and ensure continuous revenue generation.
 - **Reduces Compensation Costs:** Proactive management of delays helps avoid costs associated with refunds, compensations, or discounts given to appease unhappy customers.
 
-#### TODO:
-1. Add dvc remote
-2. Add CD pipeline
-NOTE: No need to do Model Signatures test as FastAPI will handle the input validation using Pydantic automatically.
+### Data Cleaning, Preprocessing and EDA
+We performed detailed data cleaning, preprocessing and EDA to understand the data better and to prepare it for modeling.
+- we perfrom `chi_2_test`, `anova_test` and `test_for_normality` like jarque bera test for varifying out finding before conclusion.
 
-> Example of input data for the model:
+### Experimentation
+
+**DagsHub**
+DagsHub has been used for version control, data versioning, experiment tracking and model registry. It is a platform that provides a collaborative environment for data science and machine learning projects. It allows teams to manage their code, data, and experiments in one place, making it easier to track changes, reproduce results, and collaborate effectively.
+
+**DagsHub Remote Storage**
+We are also using DagsHub's Remote Storage as DVC remote to store the data and model artifacts.
+
+**MLFLOW**
+MLflow has been used for experiment tracking, model versioning in model registry and model deployment. We are compressing the models using joblib before saving it to the mlflow as stacking model generally takes more space than the individual models.
+
+#### Baseline Model with Linear Regression
+- mae has decreased from 4.70 to 4.69.on train and test dataset respectively.
+- r2 score remain constant i.e. 0.60, on both train and test dataset.
+
+#### Random Forest with Dropping Missing Values vs Imputation
+**Random Forest with Dropping Missing Values**
+- mae has increased from 1.15 to 3.09 on train and test dataset respectively.
+- r2 score has decreased from 0.98 to 0.83 on train and test dataset respectively.
+
+**Random Forest with Imputation**
+- mae has increased from 1.22 to 3.29 on train and test dataset respectively.
+- r2 score has decreased from 0.97 to 0.80 on train and test dataset respectively.
+![alt text](/reports/figures/image-2.png)
+
+Since, the r2 score after imputation is less than the r2 score after dropping the missing values and error also increases after imputation, we can conclude that dropping the missing values is a better approach for this dataset.
+
+#### Random Forest with Imputation and Missing Value Indicator
+- mae has increased from 1.21 to 3.29 on train and test dataset respectively.
+- r2 score has decreased from 0.97 to 0.80 on train and test dataset respectively.
+![alt text](/reports/figures/image-3.png)
+Again trained the model with missing imputation and missing indicator but still the performance is not good than dropping the missing values. So, I will drop the missing values and train the model.
+
+#### Model selection with Hyperparameter tuning
+Top best models are as follows:
+1. **LightGBM**
+Average MAE of 3.17 achived.
+- mae has increased from 2.78 to 3.03 on train and test dataset respectively.
+- r2 score has decreased from 0.86 to 0.84 on train and test dataset respectively.
+
+2. **Random Forest**
+Average MAE of 3.21 achived.
+![alt text](/reports/figures/image-4.png)
+
+#### Detailed Hyperparameter Tunning of Top 2 models
+1. **LightGBM**
+- Average MAE of 3.17 achived.
+![alt text](/reports/figures/image-6.png)
+```python
+{'n_estimators': 178,
+ 'max_depth': 30,
+ 'learning_rate': 0.2770325079361985,
+ 'subsample': 0.9234451532546651,
+ 'min_child_weight': 14,
+ 'min_split_gain': 0.011307090100112493,
+ 'reg_lambda': 98.1093294393446}
+```
+
+2. **Random Forest**
+- Average MAE of 3.08 achived.
+![alt text](/reports/figures/image-8.png)
+```python
+{'n_estimators': 344,
+ 'criterion': 'squared_error',
+ 'max_depth': 25,
+ 'max_features': None,
+ 'min_samples_split': 7,
+ 'min_samples_leaf': 7,
+ 'max_samples': 0.6460792089003213}
+```
+
+#### Stacking of Top 2 models with Simple Meta Learner selection and Hyperparameter tuning
+Simple meta learner like Linear Regression, KNN and Decision Tree.
+Linear Regression as meta learner has given the best performance with average MAE of 3.02.
+![alt text](/reports/figures/image-5.png)
+
+#### Final Training of the selected model with best hyperparameters
+Linear Regression has no hyperparameters to tune, so not HP tuning of meta learner.
+- mae has increased from 2.48 to 3.01
+- r2 score has decreased from 0.89 to 0.83
+And Avearge of 3 cross validation score is 3.07.
+
+### DVC Pipeline
+1. **Data Cleaning**: Load the dataset from the raw data directory. Perform data cleaning and saved the cleaned data into cleaned folder.
+2. **data_preparation**: Load the dataset from the cleaned folder and split the dataset into train test dataset. Saved train and test dataset into the interim folder.
+3. **data_preprocessing**: Load the train and test datasets from interim folder and perform data preprocessing like encoding and scaling. Then saved the preprocessed train and test datasets into processed folder and save the preprocessor to the models foler.
+4. **model training**: Load the training dataset from processed folder and train the model and saving the model to the models folder.
+5. **model evaluation**: Load the test dataset from processed folder and evaluate the model and saving the metrics to mlflow.
+6. **Register Model**: Register the model for deployment in mlflow model registry with the Aliases `challenger` for testing.
+
+![alt text](/reports/figures/image-1.png)
+![alt text](/reports/figures/image-7.png)
+![alt text](/reports/figures/image-9.png)
+![alt text](/reports/figures/image-10.png)
+
+### FastAPI Development and Testing
+We have developed a FastAPI application for the model deployment. It don't need Model Signatures test as FastAPI will handle the input validation using `Pydantic` automatically. It also has built-in Swagger UI for testing the API endpoints. It is fast and Asynchronous. We have tested the API endpoints using Postman.
+![alt text](/reports/figures/image.png)
+
+**Input:**
 ```json
 {
   "ID": "0x4607",
@@ -50,7 +150,18 @@ NOTE: No need to do Model Signatures test as FastAPI will handle the input valid
   "City": "Urban"
 }
 ```
+**Output:**
+```
+18.73
+```
+add swigger api screenshots
+add postman api stress testing screenshot
 
+### TODO:
+2. Implement CI/CD pipeline
+3. Model signature is not logging on the mlflow model registry. Need to check the issue.
+
+> **NOTE:** `pathlib` is better than `os.path` for path handling and `Joblib` is better than `pickle` for model serialization and deserialization.
 
 ## Project Organization
 
@@ -102,6 +213,3 @@ NOTE: No need to do Model Signatures test as FastAPI will handle the input valid
     │
     └── plots.py                <- Code to create visualizations
 ```
-
---------
-

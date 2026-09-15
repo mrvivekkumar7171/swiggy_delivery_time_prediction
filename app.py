@@ -1,20 +1,26 @@
+# python app.py
 from src.utils.data_clean_utils_prod import perform_data_cleaning
+import dagshub, uvicorn, joblib, mlflow, json, os
 from sklearn.pipeline import Pipeline
 from pydantic import BaseModel
+from dotenv import load_dotenv
 from fastapi import FastAPI
 import pandas as pd
-import dagshub
-import uvicorn
-import joblib
-import mlflow
-import json
+load_dotenv()
+
+MODEL_NAME = os.getenv("MODEL_NAME")
+ALIAS = os.getenv("ALIAS")
+preprocessor_path = os.getenv("PREPROCESSOR_PATH")
+repo_owner = os.getenv("REPO_OWNER")
+repo_name = os.getenv("REPO_NAME")
+mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
 
 from sklearn import set_config
 set_config(transform_output='pandas')
 
 # initialize dagshub
-dagshub.init(repo_owner='mrvivekkumar7171', repo_name='swiggy_delivery_time_prediction', mlflow=True)
-mlflow.set_tracking_uri("https://dagshub.com/mrvivekkumar7171/swiggy_delivery_time_prediction.mlflow")
+dagshub.init(repo_owner=repo_owner, repo_name=repo_name, mlflow=True)
+mlflow.set_tracking_uri(mlflow_tracking_uri)
 
 
 class Data(BaseModel):  
@@ -44,30 +50,13 @@ def load_transformer(transformer_path):
     return transformer
 
 
-num_cols = ["age",
-            "ratings",
-            "pickup_time_minutes",
-            "distance"]
-nominal_cat_cols = ['weather',
-                    'type_of_order',
-                    'type_of_vehicle',
-                    "festival",
-                    "city_type",
-                    "is_weekend",
-                    "order_time_of_day"]
-ordinal_cat_cols = ["traffic", "distance_type"]
-model_name = 'SwiggyDeliveryTimePredictor'
-alias = "champion"
-model_uri = f"models:/{model_name}@{alias}"
-model = mlflow.sklearn.load_model(model_uri=model_uri)
-
-preprocessor_path = "models/preprocessor.joblib"
+model = mlflow.sklearn.load_model(model_uri=f"models:/{MODEL_NAME}@{ALIAS}")
 preprocessor = load_transformer(preprocessor_path)
-
 model_pipe = Pipeline(steps=[
     ('preprocess', preprocessor),
     ("regressor", model)
 ])
+
 
 app = FastAPI()
 
@@ -101,7 +90,6 @@ def do_predictions(data: Data):
     )
     cleaned_data = perform_data_cleaning(pred_data)
     return model_pipe.predict(cleaned_data)[0]
-   
-   
+
 if __name__ == "__main__":
     uvicorn.run(app="app:app", host="0.0.0.0", port=8080)

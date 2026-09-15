@@ -47,16 +47,17 @@ if __name__ == "__main__":
     
     # get the run id & model to register path
     model_uri = model_info["model_path"]
-    model_name = "SwiggyDeliveryTimePredictor"
+    model_registry_name = "SwiggyDeliveryTimePredictor"
     
     
     # register the model
-    model_version = mlflow.register_model(model_uri=model_uri, name=model_name).version
+    model_version = mlflow.register_model(model_uri=model_uri, name=model_registry_name).version
 
     logger.info(f"The latest model version in model registry is {model_version}")
 
     # update the stage of the model to staging
     client = mlflow.tracking.MlflowClient()
-    client.set_registered_model_alias(name=model_name, version=model_version, alias='challenger')
+    client.set_registered_model_alias(name=model_registry_name, version=model_version, alias='challenger')
+    client.set_model_version_tag(name=model_registry_name, version=model_version, key="Stage", value="Testing")
     
     logger.info("Model pushed to Staging stage")

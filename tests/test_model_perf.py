@@ -17,9 +17,9 @@ def load_transformer(transformer_path):
     transformer = joblib.load(transformer_path)
     return transformer
 
-model_name = 'SwiggyDeliveryTimePredictor'
+model_registry_name = 'SwiggyDeliveryTimePredictor'
 alias = "challenger"
-model_uri = f"models:/{model_name}@{alias}"
+model_uri = f"models:/{model_registry_name}@{alias}"
 model = mlflow.sklearn.load_model(model_uri=model_uri)
 
 # set the root path & load the preprocessor
@@ -52,4 +52,4 @@ def test_model_performance(model_pipe, test_data_path, threshold_error):
     assert mean_error <= threshold_error, f"The model does not pass the performance threshold of {threshold_error} minutes"
     print("The avg error is", mean_error)
 
-    print(f"The {model_name} model passed the performance test")
+    print(f"The {model_registry_name} model passed the performance test")

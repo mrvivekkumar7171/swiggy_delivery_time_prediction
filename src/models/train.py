@@ -130,30 +130,11 @@ if __name__ == "__main__":
     logger.info("Model training completed")
     
     # model name
-    model_filename = "model.joblib"
+    model_filename = "model.joblib.gz"
     # directory to save model
     model_save_dir = root_path / "models"
     model_save_dir.mkdir(exist_ok=True)
-    
-    # extract the model from wrapper
-    stacking_model = model.regressor_
-    transformer = model.transformer_
 
-    # save the model
-    save_model(model=model,
-            save_dir=model_save_dir,
-            model_name=model_filename)
+    # Compressing and save the model
+    joblib.dump(model, model_save_dir / model_filename, compress=3)
     logger.info("Trained model saved to location")
-    
-    # save the stacking model
-    stacking_filename = "stacking_regressor.joblib"
-    save_model(model=stacking_model,
-            save_dir=model_save_dir,
-            model_name=stacking_filename)
-    logger.info("Trained model saved to location")
-    
-    # save the transformer
-    transformer_filename = "power_transformer.joblib"
-    transformer_save_dir = model_save_dir
-    save_transformer(transformer, transformer_save_dir, transformer_filename)
-    logger.info("Transformer saved to location")

@@ -66,8 +66,8 @@ stages:
       size: 4060457
     - path: models/preprocessor.joblib
       hash: md5
-      md5: 3b306c4c5f37c072911eaa765a7cc085
-      size: 7913
+      md5: 7c7c96c4bc69f26c6594c0251d6b97df
+      size: 7259
   train:
     cmd: python src/models/train.py
     deps:
@@ -77,8 +77,8 @@ stages:
       size: 4060457
     - path: src/models/train.py
       hash: md5
-      md5: 484a9d476ba2557497409325916a0385
-      size: 4747
+      md5: 7e28620825490a6bd408b68a991b7777
+      size: 4103
     params:
       params.yaml:
         Train.LightGBM:
@@ -102,18 +102,10 @@ stages:
           verbose: 1
           n_jobs: -1
     outs:
-    - path: models/model.joblib
+    - path: models/model.joblib.gz
       hash: md5
-      md5: bd239fdc52ebf9026907aaaf789a8121
-      size: 149221944
-    - path: models/power_transformer.joblib
-      hash: md5
-      md5: e6ee68fb0f57f17c4d046b9083faf672
-      size: 805
-    - path: models/stacking_regressor.joblib
-      hash: md5
-      md5: 499bd267f64511ee673a3d0011bb34b8
-      size: 149210394
+      md5: ae22887053b8a03ec61d0459598e7ad3
+      size: 49406733
   evaluation:
     cmd: python src/models/evaluation.py
     deps:
@@ -125,27 +117,27 @@ stages:
       hash: md5
       md5: 607d3fb5ca7957bc02695329fe4322bd
       size: 4060457
-    - path: models/model.joblib
+    - path: models/model.joblib.gz
       hash: md5
-      md5: bd239fdc52ebf9026907aaaf789a8121
-      size: 149221944
+      md5: ae22887053b8a03ec61d0459598e7ad3
+      size: 49406733
     - path: src/models/evaluation.py
       hash: md5
-      md5: 2cbfe60fe8025f23e8320746593c92ff
-      size: 5750
+      md5: a6fa217468612adef116c1a0816c0954
+      size: 5593
     outs:
     - path: run_information.json
       hash: md5
-      md5: 75e9138b8d20f36a7c24c4a7bea92122
+      md5: 2b86de1a9a44f7f178ca0dbbc385fa15
       size: 119
   register_model:
     cmd: python src/models/register_model.py
     deps:
     - path: run_information.json
       hash: md5
-      md5: 75e9138b8d20f36a7c24c4a7bea92122
+      md5: 2b86de1a9a44f7f178ca0dbbc385fa15
       size: 119
     - path: src/models/register_model.py
       hash: md5
-      md5: dfaf055133199e7dbead554703b7965a
-      size: 1773
+      md5: 53282e7985aa0467d8aa684c8372eb55
+      size: 1912

@@ -101,10 +101,7 @@ def data_cleaning(data: pd.DataFrame):
     
     
 def clean_lat_long(data: pd.DataFrame, threshold=1):
-    location_columns = ['restaurant_latitude',
-                        'restaurant_longitude',
-                        'delivery_latitude',
-                        'delivery_longitude']
+    location_columns = ['restaurant_latitude', 'restaurant_longitude', 'delivery_latitude', 'delivery_longitude']
 
     return (
         data
@@ -135,9 +132,11 @@ def extract_datetime_features(ser):
     
 def time_of_day(ser):
 
-    return(
-        pd.cut(ser,bins=[0,6,12,17,20,24],right=True,
-               labels=["after_midnight","morning","afternoon","evening","night"])
+    return(pd.cut(
+        ser,
+        bins=[0,6,12,17,20,24],
+        right=True,
+        labels=["after_midnight","morning","afternoon","evening","night"])
     )
 
 
@@ -147,10 +146,7 @@ def drop_columns(data: pd.DataFrame, columns: list) -> pd.DataFrame:
 
 
 def calculate_haversine_distance(df):
-    location_columns = ['restaurant_latitude',
-                        'restaurant_longitude',
-                        'delivery_latitude',
-                        'delivery_longitude']
+    location_columns = ['restaurant_latitude', 'restaurant_longitude', 'delivery_latitude', 'delivery_longitude']
     
     lat1 = df[location_columns[0]]
     lon1 = df[location_columns[1]]
@@ -162,23 +158,16 @@ def calculate_haversine_distance(df):
     dlon = lon2 - lon1
     dlat = lat2 - lat1
 
-    a = np.sin(
-        dlat / 2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0)**2
-
+    a = np.sin(dlat / 2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0)**2
     c = 2 * np.arcsin(np.sqrt(a))
     distance = 6371 * c
 
-    return (
-        df.assign(
-            distance = distance)
-    )
+    return (df.assign(distance = distance))
 
 def create_distance_type(data: pd.DataFrame):
-    return(
-        data
-        .assign(
+    return(data.assign(
                 distance_type = pd.cut(data["distance"],bins=[0,5,10,15,25],
-                                        right=False,labels=["short","medium","long","very_long"])
+                right=False,labels=["short","medium","long","very_long"])
     ))
 
 

@@ -78,7 +78,7 @@ if __name__ == "__main__":
     train_data_path = root_path / "data" / "processed" / "train.csv"
     test_data_path = root_path / "data" / "processed" / "test.csv"
     # model path
-    model_path = root_path / "models" / "model.joblib"
+    model_path = root_path / "models" / "model.joblib.gz"
     
     
     # load the training data
@@ -152,16 +152,14 @@ if __name__ == "__main__":
         mlflow.log_input(dataset=test_data_input,context="validation")
         
         # model signature
-        model_signature = mlflow.models.infer_signature(model_input=X_train.sample(20,random_state=42),
-                                    model_output=model.predict(X_train.sample(20,random_state=42)))
-        model_name = "model"
+        model_signature = mlflow.models.infer_signature(model_input=X_train.sample(20, random_state=42),
+                                    model_output=model.predict(X_train.sample(20, random_state=42)))
+        model_name = "stacked_regressor_model"
 
         # log the final model
-        model_info = mlflow.sklearn.log_model(sk_model=model, artifact_path=model_name, signature=model_signature)
+        model_info = mlflow.sklearn.log_model(sk_model="models/model.joblib.gz", artifact_path=model_name, signature=model_signature)
 
-        # log stacking regressor, power transformer & preprocessor
-        mlflow.log_artifact(root_path / "models" / "stacking_regressor.joblib")
-        mlflow.log_artifact(root_path / "models" / "power_transformer.joblib")
+        # log preprocessor
         mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")
 
         logger.info("Mlflow logging complete and model logged")
