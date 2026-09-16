@@ -2,7 +2,8 @@
 
 The project aims to build an ML model that will predicts **food delivery time** taken by the `rider` to deliver food from origin `restaurant` to destination `customer`.
 
-It is a `Regression` problem where we predicts the delivery time in minutes from the restaurant to the customer. We will be using only RMSE and MAE since, we want prediction in minute instead of minute square and minutes square is not interpretable.
+It is a `Regression` problem where we predicts the delivery time in minutes from the restaurant to the customer. We will be using only RMSE and MAE since, we want prediction in minute instead of minute square as it is not interpretable.
+
 **This project takes three types of input features:**
 - Rider Information: `rider` and `vehicle` of the rider.
 - Environmental Factors: `weather`, `traffic`, `City` and `Holiday`.
@@ -30,7 +31,7 @@ We performed detailed data cleaning, preprocessing and EDA to understand the dat
 ### Experimentation
 
 **DagsHub**
-DagsHub has been used for version control, data versioning, experiment tracking and model registry. It is a platform that provides a collaborative environment for data science and machine learning projects. It allows teams to manage their code, data, and experiments in one place, making it easier to track changes, reproduce results, and collaborate effectively.
+DagsHub has been used for mlflow experiment tracking and model registry. It is a platform that provides a collaborative environment for data science and machine learning projects. It allows teams to manage their code, data, and experiments in one place, making it easier to track changes, reproduce results, and collaborate effectively.
 
 **MLFLOW**
 MLflow has been used for experiment tracking, model versioning in model registry and model deployment.
@@ -96,8 +97,7 @@ Average MAE of 3.21 achived.
 ```
 
 #### Stacking of Top 2 models with Simple Meta Learner selection and Hyperparameter tuning
-Simple meta learner like Linear Regression, KNN and Decision Tree.
-Linear Regression as meta learner has given the best performance with average MAE of 3.02.
+Simple meta learner like Linear Regression, KNN and Decision Tree are used for testing the best meta learner. Linear Regression as meta learner has given the best performance with average MAE of 3.02.
 ![alt text](/reports/figures/image-5.png)
 
 #### Final Training of the selected model with best hyperparameters
@@ -107,12 +107,12 @@ Linear Regression has no hyperparameters to tune, so not HP tuning of meta learn
 And Avearge of 3 cross validation score is 3.07.
 
 ### DVC Pipeline
-1. **Data Cleaning**: Load the dataset from the raw data directory. Perform data cleaning and saved the cleaned data into cleaned folder.
-2. **data_preparation**: Load the dataset from the cleaned folder and split the dataset into train test dataset. Saved train and test dataset into the interim folder.
-3. **data_preprocessing**: Load the train and test datasets from interim folder and perform data preprocessing like encoding and scaling. Then saved the preprocessed train and test datasets into processed folder and save the preprocessor to the models foler.
-4. **model training**: Load the training dataset from processed folder and train the model and saving the model to the models folder.
-5. **model evaluation**: Load the test dataset from processed folder and evaluate the model and saving the metrics to mlflow.
-6. **Register Model**: Register the model for deployment in mlflow model registry with the Aliases `challenger` for testing.
+1. **Data Cleaning**: Load the dataset from the raw data directory. Perform data cleaning and saved the cleaned data into **cleaned folder**.
+2. **data_preparation**: Load the dataset from the **cleaned folder** and split the dataset into train test dataset. Saved train and test dataset into the **interim folder**.
+3. **data_preprocessing**: Load the train and test datasets from **interim folder** and perform data preprocessing like encoding and scaling. Then saved the preprocessed train and test datasets into **processed folder** and save the preprocessor to the **models foler**.
+4. **model training**: Load the training dataset from **processed folder** and train the model and saving the model to the **models folder**.
+5. **model evaluation**: Load the test dataset from **processed folder** and evaluate the model and saving the metrics to **mlflow**.
+6. **Register Model**: Register the model for deployment in **mlflow model registry** with the Aliases `challenger`.
 
 ![alt text](/reports/figures/image-1.png)
 ![alt text](/reports/figures/image-7.png)
@@ -120,7 +120,7 @@ And Avearge of 3 cross validation score is 3.07.
 ![alt text](/reports/figures/image-10.png)
 
 ### FastAPI Development and Testing
-We have developed a FastAPI application for the model deployment. It don't need Model Signatures test as FastAPI will handle the input validation using `Pydantic` automatically. It also has built-in Swagger UI for testing the API endpoints. It is fast and Asynchronous. We have tested the API endpoints using Postman.
+We have developed a FastAPI application for the model deployment as it is fast and Asynchronous and has built-in Swagger UI for testing the API endpoints. It don't need Model Signatures test as FastAPI will handle the input validation using `Pydantic` automatically. We have tested the API endpoints using Postman.
 ![alt text](/reports/figures/image.png)
 
 **Input:**
@@ -147,18 +147,34 @@ We have developed a FastAPI application for the model deployment. It don't need 
   "City": "Urban"
 }
 ```
+
 **Output:**
 ```
 18.73
 ```
-add postman api stress testing screenshot
+![alt text](/reports/figures/image.png)
+![alt text](/reports/figures/image-1.png)
+
+### CI/CD
+1. Pull the codes from GitHub into the runner. 
+2. Install python and required dependencies.
+3. Pull the data from dvc remote.
+4. Run the dvc pipeline to get the latest model. It will register the model in mlflow model registry with the alias `challenger` for testing.
+5. Check do the model is loading correctly from the mlflow model registry.
+6. Test the metrics performance of the model using the test dataset and if the metrics is above our threshold, we will promote the model to `production` in mlflow model registry.
+7. Dockerize the FastAPI application and push the Docker Image to the container registry.
+8. Perform the model API testing of Dockerized FastAPI application.
+9. Deploy the Docker Image to the cloud for stress and A/B testing.
+10. Perform the Stress and A/B testing of the Deployed API.
+11. Deploy the Docker Image to the cloud for users.
+12. Monitor the API performance and logs for any issues.
+13. If performance degrades, we will retrain the model and repeat the CI/CD pipeline.
 
 ### TODO:
-1. add dvc remote.
+1. Add dvc remote.
 2. Implement CI/CD pipeline
-3. Model signature is not logging on the mlflow model registry. Need to check the issue.
 
-> **NOTE:** `pathlib` is better than `os.path` for path handling and `Joblib` is better than `pickle` for model serialization and deserialization.
+> **NOTE:** `pathlib` is better than `os.path` for path handling and `Joblib` is better than `pickle` for model serialization and deserialization. Testing is done using `pytest` because it allows parameterized testing.
 
 ## Project Organization
 

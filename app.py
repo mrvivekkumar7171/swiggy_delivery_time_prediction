@@ -8,7 +8,7 @@ from fastapi import FastAPI
 import pandas as pd
 load_dotenv()
 
-MODEL_NAME = os.getenv("MODEL_NAME")
+MODEL_REGISTRY_NAME = os.getenv("MODEL_REGISTRY_NAME")
 ALIAS = os.getenv("ALIAS")
 preprocessor_path = os.getenv("PREPROCESSOR_PATH")
 repo_owner = os.getenv("REPO_OWNER")
@@ -50,7 +50,7 @@ def load_transformer(transformer_path):
     return transformer
 
 
-model = mlflow.sklearn.load_model(model_uri=f"models:/{MODEL_NAME}@{ALIAS}")
+model = mlflow.sklearn.load_model(model_uri=f"models:/{MODEL_REGISTRY_NAME}@{ALIAS}")
 preprocessor = load_transformer(preprocessor_path)
 model_pipe = Pipeline(steps=[
     ('preprocess', preprocessor),

@@ -16,8 +16,7 @@ alias = "challenger"
 def test_load_model_from_registry(model_registry_name, alias):
 
     # load the latest model from model registry
-    model_uri = f"models:/{model_registry_name}@{alias}"
-    model = mlflow.sklearn.load_model(model_uri=model_uri)
+    model = mlflow.sklearn.load_model(model_uri=f"models:/{model_registry_name}@{alias}")
     
     assert model is not None, "Failed to load model from registry"
     print(f"The {model_registry_name} model with alias {alias} was loaded successfully")

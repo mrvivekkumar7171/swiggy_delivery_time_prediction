@@ -1,11 +1,11 @@
+import dagshub, logging, mlflow, json, os
+from dotenv import load_dotenv
 from pathlib import Path
 import mlflow.client
-import dagshub
-import logging
-import mlflow
-import json
-import dagshub
+load_dotenv()
 
+MODEL_REGISTRY_NAME = os.getenv("MODEL_REGISTRY_NAME")
+MODEL_NAME = os.getenv("MODEL_NAME")
 
 # create logger
 logger = logging.getLogger("register_model")
@@ -47,17 +47,15 @@ if __name__ == "__main__":
     
     # get the run id & model to register path
     model_uri = model_info["model_path"]
-    model_registry_name = "SwiggyDeliveryTimePredictor"
-    
     
     # register the model
-    model_version = mlflow.register_model(model_uri=model_uri, name=model_registry_name).version
+    model_version = mlflow.register_model(model_uri, MODEL_REGISTRY_NAME).version
 
     logger.info(f"The latest model version in model registry is {model_version}")
 
     # update the stage of the model to staging
     client = mlflow.tracking.MlflowClient()
-    client.set_registered_model_alias(name=model_registry_name, version=model_version, alias='challenger')
-    client.set_model_version_tag(name=model_registry_name, version=model_version, key="Stage", value="Testing")
+    client.set_registered_model_alias(name=MODEL_REGISTRY_NAME, version=model_version, alias='challenger')
+    client.set_model_version_tag(name=MODEL_REGISTRY_NAME, version=model_version, key="Stage", value="Testing")
     
     logger.info("Model pushed to Staging stage")

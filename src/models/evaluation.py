@@ -1,20 +1,18 @@
+import mlflow, os, warnings, dagshub, logging, joblib, json
 from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.model_selection import cross_val_score
+from dotenv import load_dotenv
 from pathlib import Path
 import pandas as pd
-import warnings
-import dagshub
-import logging
-import mlflow
-import joblib
-import json
+load_dotenv()
+
+MODEL_NAME = os.getenv("MODEL_NAME")
 
 # Suppress the Python UserWarnings from MLflow (e.g., the inferred schema warning)
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
 logging.getLogger("mlflow").setLevel(logging.ERROR)
 
 # initialize dagshub
-import dagshub
 dagshub.init(repo_owner='mrvivekkumar7171', repo_name='swiggy_delivery_time_prediction', mlflow=True)
 
 # set the mlflow tracking server
@@ -87,6 +85,11 @@ if __name__ == "__main__":
     # load the test data
     test_data = load_data(test_data_path)
     logger.info("Test data loaded successfully")
+
+    # Convert integers to floats early so MLflow Datasets AND MLflow Models are happy
+    int_cols = train_data.select_dtypes(include=['int32', 'int64']).columns
+    train_data[int_cols] = train_data[int_cols].astype('float64')
+    test_data[int_cols] = test_data[int_cols].astype('float64')
     
     # split the train and test data
     X_train, y_train = make_X_and_y(train_data,TARGET)
@@ -152,12 +155,23 @@ if __name__ == "__main__":
         mlflow.log_input(dataset=test_data_input,context="validation")
         
         # model signature
-        model_signature = mlflow.models.infer_signature(model_input=X_train.sample(20, random_state=42),
-                                    model_output=model.predict(X_train.sample(20, random_state=42)))
-        model_name = "stacked_regressor_model"
+        model_signature = mlflow.models.infer_signature(
+            model_input=X_train.sample(20, random_state=42),
+            model_output=model.predict(X_train.sample(20, random_state=42)))
 
         # log the final model
-        model_info = mlflow.sklearn.log_model(sk_model="models/model.joblib.gz", artifact_path=model_name, signature=model_signature)
+        model_info = mlflow.sklearn.log_model(
+            sk_model=model,
+            name=MODEL_NAME,
+            input_example=X_train.iloc[[0]],
+            signature=model_signature,
+            skops_trusted_types=[
+                "collections.OrderedDict",
+                "lightgbm.basic.Booster",
+                "lightgbm.sklearn.LGBMRegressor",
+                "sklearn.utils._bunch.Bunch",
+            ]
+            )
 
         # log preprocessor
         mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")

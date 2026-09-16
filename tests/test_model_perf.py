@@ -19,12 +19,11 @@ def load_transformer(transformer_path):
 
 model_registry_name = 'SwiggyDeliveryTimePredictor'
 alias = "challenger"
-model_uri = f"models:/{model_registry_name}@{alias}"
-model = mlflow.sklearn.load_model(model_uri=model_uri)
+model = mlflow.sklearn.load_model(model_uri=f"models:/{model_registry_name}@{alias}")
 
 # set the root path & load the preprocessor
 root_path = Path(__file__).parent.parent
-preprocessor_path = root_path / "models" / "preprocessor.joblib"
+preprocessor_path = root_path/"models"/"preprocessor.joblib"
 preprocessor = load_transformer(preprocessor_path)
 
 # build the model pipeline
@@ -32,9 +31,11 @@ model_pipe = Pipeline(steps=[
     ('preprocess', preprocessor),
     ("regressor", model)
 ])
-test_data_path = root_path / "data" / "interim" / "test.csv"
+test_data_path = root_path/"data"/"interim"/"test.csv"
 
-@pytest.mark.parametrize(argnames="model_pipe, test_data_path, threshold_error", argvalues=[(model_pipe, test_data_path, 5)])
+@pytest.mark.parametrize(
+    argnames="model_pipe, test_data_path, threshold_error",
+    argvalues=[(model_pipe, test_data_path, 5)])
 def test_model_performance(model_pipe, test_data_path, threshold_error):
     # load test data & drop the missing values
     df = pd.read_csv(test_data_path)

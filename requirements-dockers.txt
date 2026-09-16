@@ -6,6 +6,3 @@ mlflow
 joblib
 dagshub
 lightgbm
-dvc
-lightgbm
-optuna
