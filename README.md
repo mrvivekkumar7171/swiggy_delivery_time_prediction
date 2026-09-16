@@ -32,11 +32,8 @@ We performed detailed data cleaning, preprocessing and EDA to understand the dat
 **DagsHub**
 DagsHub has been used for version control, data versioning, experiment tracking and model registry. It is a platform that provides a collaborative environment for data science and machine learning projects. It allows teams to manage their code, data, and experiments in one place, making it easier to track changes, reproduce results, and collaborate effectively.
 
-**DagsHub Remote Storage**
-We are also using DagsHub's Remote Storage as DVC remote to store the data and model artifacts.
-
 **MLFLOW**
-MLflow has been used for experiment tracking, model versioning in model registry and model deployment. We are compressing the models using joblib before saving it to the mlflow as stacking model generally takes more space than the individual models.
+MLflow has been used for experiment tracking, model versioning in model registry and model deployment.
 
 #### Baseline Model with Linear Regression
 - mae has decreased from 4.70 to 4.69.on train and test dataset respectively.
@@ -154,10 +151,10 @@ We have developed a FastAPI application for the model deployment. It don't need 
 ```
 18.73
 ```
-add swigger api screenshots
 add postman api stress testing screenshot
 
 ### TODO:
+1. add dvc remote.
 2. Implement CI/CD pipeline
 3. Model signature is not logging on the mlflow model registry. Need to check the issue.
 

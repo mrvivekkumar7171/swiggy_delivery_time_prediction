@@ -77,8 +77,8 @@ stages:
       size: 4060457
     - path: src/models/train.py
       hash: md5
-      md5: 7e28620825490a6bd408b68a991b7777
-      size: 4103
+      md5: ac4e77034d4970ca606399adf9a1f348
+      size: 4072
     params:
       params.yaml:
         Train.LightGBM:
@@ -102,10 +102,10 @@ stages:
           verbose: 1
           n_jobs: -1
     outs:
-    - path: models/model.joblib.gz
+    - path: models/model.joblib
       hash: md5
-      md5: ae22887053b8a03ec61d0459598e7ad3
-      size: 49406733
+      md5: af9083906fad2f225cbdf1b6ede3018a
+      size: 148981832
   evaluation:
     cmd: python src/models/evaluation.py
     deps:
@@ -117,25 +117,25 @@ stages:
       hash: md5
       md5: 607d3fb5ca7957bc02695329fe4322bd
       size: 4060457
-    - path: models/model.joblib.gz
+    - path: models/model.joblib
       hash: md5
-      md5: ae22887053b8a03ec61d0459598e7ad3
-      size: 49406733
+      md5: af9083906fad2f225cbdf1b6ede3018a
+      size: 148981832
     - path: src/models/evaluation.py
       hash: md5
-      md5: a6fa217468612adef116c1a0816c0954
-      size: 5593
+      md5: fee6007ea433d945b5cddf470776dd42
+      size: 5590
     outs:
     - path: run_information.json
       hash: md5
-      md5: 2b86de1a9a44f7f178ca0dbbc385fa15
+      md5: d5737b0bf0c411e4e5bac03fd8ef58e6
       size: 119
   register_model:
     cmd: python src/models/register_model.py
     deps:
     - path: run_information.json
       hash: md5
-      md5: 2b86de1a9a44f7f178ca0dbbc385fa15
+      md5: d5737b0bf0c411e4e5bac03fd8ef58e6
       size: 119
     - path: src/models/register_model.py
       hash: md5

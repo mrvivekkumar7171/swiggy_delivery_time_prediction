@@ -130,11 +130,11 @@ if __name__ == "__main__":
     logger.info("Model training completed")
     
     # model name
-    model_filename = "model.joblib.gz"
+    model_filename = "model.joblib"
     # directory to save model
     model_save_dir = root_path / "models"
     model_save_dir.mkdir(exist_ok=True)
 
-    # Compressing and save the model
-    joblib.dump(model, model_save_dir / model_filename, compress=3)
+    # save the model
+    joblib.dump(model, model_save_dir / model_filename)
     logger.info("Trained model saved to location")

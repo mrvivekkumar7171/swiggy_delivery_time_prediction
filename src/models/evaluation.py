@@ -78,7 +78,7 @@ if __name__ == "__main__":
     train_data_path = root_path / "data" / "processed" / "train.csv"
     test_data_path = root_path / "data" / "processed" / "test.csv"
     # model path
-    model_path = root_path / "models" / "model.joblib.gz"
+    model_path = root_path / "models" / "model.joblib"
     
     
     # load the training data
