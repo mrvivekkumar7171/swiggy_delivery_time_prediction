@@ -152,8 +152,8 @@ We have developed a FastAPI application for the model deployment as it is fast a
 ```
 18.73
 ```
-![alt text](/reports/figures/image.png)
-![alt text](/reports/figures/image-1.png)
+![alt text](/reports/figures/image-11.png)
+![alt text](/reports/figures/image-12.png)
 
 ### CI/CD
 1. Pull the codes from GitHub into the runner. 
